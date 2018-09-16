@@ -1,0 +1,81 @@
+class QuadTree():
+    
+    __MAX_OBJECTS = 10
+    __MAX_LEVELS = 5
+
+    __level = 0
+    __objects = []
+    __bounds = {}
+    __nodes = []
+
+
+    def __init__(self, pLevel, pBounds):
+        __level = int(pLevel)
+        __bounds = pBounds
+
+    def clear(self):
+        __objects.clear()
+        __nodes.clear()
+
+    def __split(self):
+        subWidth = __bounds['width']/2
+        subHeight = __bounds['height']/2
+        x = __bounds['x']
+        y = __bounds['y']
+
+        __nodes[0] = QuadTree(__level+1, {x+subWidth, y, subWidth, subHeight})
+        __nodes[1] = QuadTree(__level+1, {x, y, subWidth, subHeight})
+        __nodes[2] = QuadTree(__level+1, {x, y+subHeight, subWidth, subHeight})
+        __nodes[3] = QuadTree(__level+1, {x+subWidth, y+subHeight, subWidth, subHeight})
+
+    def __getIndex(self):
+
+        __index = -1
+        verticalMidpoint = __bounds['y'] + (__bounds['height']/2)
+        horizontalMidpoint = __bounds['x'] + (__bounds['width']/2)
+
+        topQuadrant = (__bounds['y'] < verticalMidpoint and __bounds['y'] + __bounds['height'] < verticalMidpoint)
+        bottomQuadrant = (__bounds['y'] > verticalMidpoint)
+
+        if(__bounds['x'] < horizontalMidpoint and __bounds['x'] + __bounds['width'] < horizontalMidpoint):
+            if(topQuadrant):
+                __index = 1
+            elif(bottomQuadrant):
+                __index = 2
+        elif(__bounds['x'] > horizontalMidpoint):
+            if(topQuadrant):
+                __index = 0
+            elif(bottomQuadrant):
+                __index = 3
+
+        return __index
+
+    def insert(self, pBounds):
+        if(__nodes[0] is not None):
+            indexSet = __getIndex()
+            if(indexSet is not -1):
+                __nodes[indexSet].insert(pBounds)
+                return
+
+        __objects.add(pBounds)
+
+        if(__objects.len() > __MAX_OBJECTS and level < __MAX_LEVELS):
+            if(__nodes[0] is None):
+                __split()
+
+            i = 0
+            while(i < __objects.len()):
+                index = __getIndex(__objects.get(i))
+                if (index is not -1):
+                    __nodes[index].insert(__objects.remove(i))
+                else:
+                    i = i+1
+
+    def retrieve(self, returnObjects, pBounds):
+        index = getIndex(pBounds)
+        if(index is not -1 and __nodes[0] is None):
+            __nodes[index].retrieve(returnObjects, pBounds)
+
+        returnObjects.add(__objects)
+
+        return returnObjects
